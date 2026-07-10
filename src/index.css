@@ -1,0 +1,1054 @@
+/* Load Nothing OS Fonts */
+@font-face {
+    font-family: 'NDot55';
+    src: url('/fonts/Ndot55-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NType82';
+    src: url('/fonts/NType82-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 1. Theme Configuration & CSS Custom Variables */
+:root {
+    /* Fonts */
+    --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-ndot: 'NDot55', 'Space Mono', monospace;
+    --font-ntype: 'NType82', sans-serif;
+
+    /* Transitions */
+    --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: all 0.15s ease;
+}
+
+:root[data-theme="dark"] {
+    --bg-color: #000000;
+    --widget-bg: #0d0d0d;
+    --widget-bg-hover: #151515;
+    --border-color: rgba(255, 255, 255, 0.15); /* Higher visibility borders */
+    --border-color-hover: rgba(255, 255, 255, 0.3);
+    --text-primary: #ffffff;
+    --text-secondary: #a9a9b2; /* Lighter gray for secondary text */
+    --text-tertiary: #71717a; /* Highly visible gray for labels/tags */
+    
+    /* Nothing OS signature Red & CMF Orange */
+    --accent-red: #ff3b3b; /* Slightly brighter red for dark mode contrast */
+    --accent-red-rgb: 255, 59, 59;
+    --accent-orange: #ff5500;
+    
+    /* Tactical Dot Grid Overlay */
+    --dot-color: rgba(255, 255, 255, 0.22); /* Increased visibility on black background */
+    
+    /* Shadow & Glassmorphism */
+    --shadow-main: 0 4px 24px 0 rgba(0, 0, 0, 0.7);
+    --btn-toggle-bg: #1e1e20;
+    --btn-toggle-dot: #ffffff;
+}
+
+:root[data-theme="light"] {
+    --bg-color: #f5f5f5; /* Official Nothing OS off-white background */
+    --widget-bg: #ffffff;
+    --widget-bg-hover: #fafafa;
+    --border-color: rgba(0, 0, 0, 0.12); /* Higher visibility borders */
+    --border-color-hover: rgba(0, 0, 0, 0.25);
+    --text-primary: #000000;
+    --text-secondary: #4b4b4f; /* Darker gray for secondary text */
+    --text-tertiary: #76767b; /* Darker gray for labels/tags */
+    
+    /* Nothing OS signature Red & CMF Orange */
+    --accent-red: #ff2b2b;
+    --accent-red-rgb: 255, 43, 43;
+    --accent-orange: #ff4f00;
+    
+    /* Tactical Dot Grid Overlay */
+    --dot-color: rgba(0, 0, 0, 0.32); /* Increased visibility on off-white background */
+    
+    /* Shadow & Glassmorphism */
+    --shadow-main: 0 4px 24px 0 rgba(0, 0, 0, 0.03);
+    --btn-toggle-bg: #e5e5ea;
+    --btn-toggle-dot: #000000;
+}
+
+/* 2. Reset & Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.3s ease;
+    
+    /* Pixelated dot matrix screen texture matching Nothing website (larger 80px grid) */
+    background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+    background-size: 80px 80px;
+}
+
+/* Custom Scrollbar to fit aesthetic */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+/* 3. Layout: Main Dashboard Container */
+.dashboard-container {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 4. Status Header (Top Bar) */
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--widget-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 100px;
+    box-shadow: var(--shadow-main);
+    backdrop-filter: blur(10px);
+    transition: var(--transition-smooth);
+}
+
+.status-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-ndot);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.dot-logo {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-link {
+    font-family: var(--font-ndot);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    transition: var(--transition-fast);
+    letter-spacing: 1px;
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    background-color: var(--border-color);
+}
+
+.nav-link.active {
+    color: var(--text-primary);
+    background-color: var(--border-color);
+    border: 1px solid var(--border-color-hover);
+}
+
+.status-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.theme-toggle-btn {
+    background: var(--btn-toggle-bg);
+    border: 1px solid var(--border-color);
+    width: 42px;
+    height: 24px;
+    border-radius: 100px;
+    cursor: pointer;
+    position: relative;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    transition: var(--transition-smooth);
+}
+
+.toggle-dot {
+    width: 18px;
+    height: 18px;
+    background-color: var(--btn-toggle-dot);
+    border-radius: 50%;
+    position: absolute;
+    left: 3px;
+    transition: var(--transition-smooth);
+}
+
+/* Toggle switch movement on theme active light */
+:root[data-theme="light"] .toggle-dot {
+    left: calc(100% - 21px);
+}
+
+.status-time {
+    font-family: var(--font-ndot);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    border-left: 1px solid var(--border-color);
+    padding-left: 16px;
+}
+
+/* 5. Bento Grid Layout */
+.bento-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+/* 6. Widget Styles */
+.widget {
+    background-color: var(--widget-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 28px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-main);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.widget:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-color-hover);
+    background-color: var(--widget-bg-hover);
+}
+
+/* Widget Header */
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.widget-tag {
+    font-family: var(--font-ndot);
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.widget-status-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    animation: statusPulse 2s infinite ease-in-out;
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.9);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* Widget Hero Specifics */
+.widget-hero .widget-body {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.hero-name {
+    font-family: var(--font-ndot);
+    font-size: 2.8rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.accent-char {
+    color: var(--accent-red);
+}
+
+.hero-title {
+    font-family: var(--font-ndot);
+    font-size: 1.2rem;
+    color: var(--accent-red);
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.hero-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-width: 480px;
+}
+
+.widget-hero .widget-footer {
+    margin-top: 24px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 16px;
+}
+
+.quote {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+/* Widget Tech Specifics */
+.section-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+.tech-system-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.tech-card {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition-fast);
+    background-color: transparent;
+    cursor: default;
+}
+
+.tech-card:hover {
+    border-color: var(--border-color-hover);
+    background-color: var(--border-color);
+}
+
+/* SVG Icon wrapper — monochrome default, brand color on hover */
+.tech-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: var(--text-tertiary);
+    transition: color 0.25s ease, filter 0.25s ease;
+}
+
+.tech-icon {
+    width: 100%;
+    height: 100%;
+}
+
+.tech-name {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Brand color on hover per technology — subtle glow inspired by CMF & Nothing palette */
+/* Dark theme — saturated, slightly lighter brand colors for contrast on dark bg */
+.tech-card[data-tech="javascript"]:hover .tech-icon-wrapper { color: #e8c31c; filter: drop-shadow(0 0 5px rgba(232,195,28,0.6)); }
+.tech-card[data-tech="typescript"]:hover .tech-icon-wrapper  { color: #4b95c4; filter: drop-shadow(0 0 5px rgba(75,149,196,0.6)); }
+.tech-card[data-tech="react"]:hover .tech-icon-wrapper        { color: #61dafb; filter: drop-shadow(0 0 5px rgba(97,218,251,0.5)); }
+.tech-card[data-tech="nodejs"]:hover .tech-icon-wrapper       { color: #6db33f; filter: drop-shadow(0 0 5px rgba(109,179,63,0.5)); }
+.tech-card[data-tech="java"]:hover .tech-icon-wrapper         { color: #ff2b2b; filter: drop-shadow(0 0 5px rgba(255,43,43,0.6)); }
+.tech-card[data-tech="python"]:hover .tech-icon-wrapper       { color: #78a8c4; filter: drop-shadow(0 0 5px rgba(120,168,196,0.5)); }
+.tech-card[data-tech="sql"]:hover .tech-icon-wrapper          { color: #a0a0a5; filter: drop-shadow(0 0 5px rgba(160,160,165,0.5)); }
+.tech-card[data-tech="html-css"]:hover .tech-icon-wrapper     { color: #ff4f00; filter: drop-shadow(0 0 5px rgba(255,79,0,0.6)); }
+
+/* Light theme overrides — darkened for legibility on white/off-white background */
+:root[data-theme="light"] .tech-icon-wrapper {
+    color: #4b4b4f; /* Darker base to be visible at rest on light bg */
+}
+:root[data-theme="light"] .tech-card[data-tech="javascript"]:hover .tech-icon-wrapper { color: #a07c00; filter: drop-shadow(0 0 4px rgba(160,124,0,0.4)); }   /* Amber-gold */
+:root[data-theme="light"] .tech-card[data-tech="typescript"]:hover .tech-icon-wrapper  { color: #1a5f8a; filter: drop-shadow(0 0 4px rgba(26,95,138,0.4)); }   /* Deep blue */
+:root[data-theme="light"] .tech-card[data-tech="react"]:hover .tech-icon-wrapper        { color: #0284a8; filter: drop-shadow(0 0 4px rgba(2,132,168,0.4)); }   /* Ocean cyan */
+:root[data-theme="light"] .tech-card[data-tech="nodejs"]:hover .tech-icon-wrapper       { color: #3a7c1e; filter: drop-shadow(0 0 4px rgba(58,124,30,0.4)); }   /* Forest green */
+:root[data-theme="light"] .tech-card[data-tech="java"]:hover .tech-icon-wrapper         { color: #cc1a1a; filter: drop-shadow(0 0 4px rgba(204,26,26,0.4)); }   /* Deep red */
+:root[data-theme="light"] .tech-card[data-tech="python"]:hover .tech-icon-wrapper       { color: #1b5fa0; filter: drop-shadow(0 0 4px rgba(27,95,160,0.4)); }   /* Python blue */
+:root[data-theme="light"] .tech-card[data-tech="sql"]:hover .tech-icon-wrapper          { color: #3f3f46; filter: drop-shadow(0 0 4px rgba(63,63,70,0.4)); }    /* Charcoal */
+:root[data-theme="light"] .tech-card[data-tech="html-css"]:hover .tech-icon-wrapper     { color: #c23800; filter: drop-shadow(0 0 4px rgba(194,56,0,0.4)); }    /* Deep orange */
+
+/* Widget Project / Placeholders */
+.project-placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.dot-matrix-box {
+    border: 1px dashed var(--border-color);
+    background-color: var(--bg-color);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    height: 120px;
+    position: relative;
+}
+
+/* Matrix dotted design overlay in box */
+.dot-matrix-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+    background-size: 8px 8px;
+    opacity: 0.5;
+    border-radius: 16px;
+}
+
+.matrix-text {
+    font-family: var(--font-ndot);
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    z-index: 1;
+    letter-spacing: 1.5px;
+}
+
+.widget-project:hover .matrix-text {
+    color: var(--accent-red);
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.project-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Contact List Widget */
+.contact-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contact-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border: 1px dashed var(--border-color);
+    border-radius: 16px;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.contact-link:hover {
+    border-color: var(--accent-red);
+    background-color: rgba(var(--accent-red-rgb), 0.05);
+}
+
+.contact-label {
+    font-family: var(--font-ndot);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.contact-value {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.contact-link:hover .contact-value {
+    color: var(--accent-red);
+}
+
+/* 7. System Footer */
+.system-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--border-color);
+    margin-top: 24px;
+}
+
+.footer-system-status {
+    color: var(--accent-red);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   8. Responsive Breakpoints & Bento Grid Adjustments
+   ========================================================================== */
+
+/* Tablet Portrait & Small Screens */
+@media (min-width: 600px) {
+    .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .widget-hero {
+        grid-column: span 2;
+    }
+    
+    .widget-tech {
+        grid-column: span 2;
+    }
+    
+    .tech-system-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .widget-contact {
+        grid-column: span 2;
+    }
+}
+
+/* Desktop & Large Screens */
+@media (min-width: 900px) {
+    .bento-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: minmax(220px, auto);
+    }
+    
+    .widget-hero {
+        grid-column: span 2;
+        grid-row: span 1;
+    }
+    
+    .widget-tech {
+        grid-column: span 1;
+        grid-row: span 1; /* auto height — content-driven, no artificial stretching */
+    }
+    
+    .tech-system-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .widget-contact {
+        grid-column: span 2;
+        grid-row: span 1;
+    }
+    
+    .hero-name {
+        font-size: 3.5rem;
+    }
+}
+
+/* ==========================================================================
+   9. Secure Contact Widget Form & Social Copy Button Styles
+   ========================================================================== */
+
+.contact-widget-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .contact-widget-layout {
+        flex-direction: row;
+    }
+    .contact-form-container {
+        flex: 1.2;
+        border-right: 1px dashed var(--border-color);
+        padding-right: 32px;
+    }
+    .contact-socials-container {
+        flex: 0.8;
+        padding-left: 16px;
+    }
+}
+
+.contact-section-title {
+    font-family: var(--font-ndot);
+    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+/* Nothing Contact Form styling */
+.nothing-contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-red);
+    background-color: rgba(var(--accent-red-rgb), 0.02);
+}
+
+.form-submit-btn {
+    background: var(--text-primary);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: var(--font-ndot);
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    width: 100%;
+}
+
+.form-submit-btn:hover {
+    background: var(--accent-red);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.form-submit-btn:active {
+    transform: translateY(0);
+}
+
+.form-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Success Message styling */
+.form-success-message {
+    border: 1px dashed var(--accent-red);
+    background-color: rgba(var(--accent-red-rgb), 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    min-height: 220px;
+}
+
+.success-dot {
+    width: 12px;
+    height: 12px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    margin-bottom: 16px;
+    animation: statusPulse 1.5s infinite ease-in-out;
+}
+
+.success-text {
+    font-family: var(--font-ndot);
+    font-size: 1rem;
+    color: var(--accent-red);
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+.success-subtext {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 260px;
+}
+
+/* ===== Secure Contact Cards — full card is the copy button ===== */
+.socials-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.contact-copy-card {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border: 1px dashed var(--border-color);
+    border-radius: 16px;
+    background: transparent;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    text-align: left;
+}
+
+.contact-copy-card:hover {
+    border-color: var(--accent-red);
+    background-color: rgba(var(--accent-red-rgb), 0.04);
+    transform: translateX(4px);
+}
+
+.contact-copy-card:active {
+    transform: translateX(2px) scale(0.99);
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.copy-icon {
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.contact-copy-card:hover .copy-icon {
+    color: var(--accent-red);
+}
+
+/* ===== Nothing OS Toast Notification ===== */
+.copy-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--widget-bg);
+    border: 1px solid var(--accent-red);
+    border-radius: 100px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-ndot);
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    color: var(--text-primary);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-red);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    white-space: nowrap;
+}
+
+.copy-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.copy-toast-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    animation: statusPulse 1.5s infinite ease-in-out;
+    flex-shrink: 0;
+}
+
+.copy-toast-text {
+    color: var(--text-primary);
+}
+
+/* ===== Floating Scroll-to-top Button ===== */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--widget-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-main);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(16px);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease;
+    z-index: 999;
+}
+
+.scroll-top-btn--visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+    background: var(--accent-red);
+    border-color: var(--accent-red);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+
+.scroll-top-btn:active {
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   ARCADE WIDGET — SNAKE.EXE (NothingOS Tamagotchi style)
+   ========================================================================== */
+
+.widget-game {
+    align-items: stretch;          /* children fill width */
+    justify-content: flex-start;   /* override widget's space-between */
+    gap: 10px;
+    padding: 22px 16px 16px 16px;  /* extra top padding so ARCADE.EXE tag breathes */
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Score bar */
+.game-scorebar {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    align-self: stretch;
+    font-family: var(--font-ndot);
+    letter-spacing: 1.5px;
+}
+
+.game-score-label {
+    font-size: 0.65rem;
+    color: var(--text-tertiary);
+}
+
+.game-score-value {
+    font-size: 0.8rem;
+    color: var(--accent-red);
+}
+
+.game-score-sep {
+    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    margin: 0 2px;
+}
+
+/* Canvas container */
+.game-canvas-wrapper {
+    position: relative;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    /* height flows from canvas intrinsic ratio — no flex:1 to avoid distortion */
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.game-canvas {
+    display: block;
+    width: 100%;    /* fill wrapper width */
+    height: auto;   /* ← preserves intrinsic 154×196 aspect ratio, no distortion */
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Idle / Game-over overlay */
+.game-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    backdrop-filter: blur(3px);
+    /* color set inline via getColors() logic — uses CSS vars as fallback */
+    background: var(--widget-bg);
+    opacity: 0.93;
+}
+
+.game-overlay-tag {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.game-overlay-title {
+    font-family: var(--font-ndot);
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+}
+
+.game-overlay-pts {
+    font-family: var(--font-ndot);
+    font-size: 0.85rem;
+    color: var(--accent-red);
+    letter-spacing: 2px;
+}
+
+.game-overlay-hint {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+}
+
+.game-start-btn {
+    margin-top: 6px;
+    background: var(--text-primary);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-family: var(--font-ndot);
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.game-start-btn:hover {
+    background: var(--accent-red);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.game-start-btn:active {
+    transform: translateY(0);
+}
+
+/* D-pad — mobile controls */
+.game-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.dpad-row {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+}
+
+.dpad-row--mid {
+    gap: 2px;
+    align-items: center;
+}
+
+.dpad-center {
+    width: 28px;
+    height: 28px;
+}
+
+.dpad-btn {
+    width: 28px;
+    height: 28px;
+    background: var(--border-color);
+    border: 1px solid var(--border-color-hover);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+    line-height: 1;
+}
+
+.dpad-btn:hover {
+    background: var(--text-primary);
+    color: var(--bg-color);
+}
+
+.dpad-btn:active {
+    transform: scale(0.92);
+}
+
+/* Hide D-pad on devices that have keyboards (desktop) */
+@media (hover: hover) and (pointer: fine) {
+    .game-dpad {
+        display: none;
+    }
+}
