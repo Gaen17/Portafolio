@@ -205,6 +205,7 @@ export const GameWidget: React.FC = () => {
   // ── Keyboard controls ────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (gameState.current !== 'playing') return;
       const map: Record<string, Dir> = {
         ArrowUp: 'U', w: 'U', W: 'U',
         ArrowDown: 'D', s: 'D', S: 'D',
@@ -215,7 +216,7 @@ export const GameWidget: React.FC = () => {
       if (!nd) return;
       if (nd !== OPP[dir.current]) nextDir.current = nd;
       // Prevent page scroll while playing
-      if (gameState.current === 'playing') e.preventDefault();
+      e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

@@ -258,9 +258,14 @@ body {
 }
 
 .widget:hover {
-    transform: translateY(-4px);
     border-color: var(--border-color-hover);
     background-color: var(--widget-bg-hover);
+}
+
+@media (hover: hover) {
+    .widget:hover {
+        transform: translateY(-4px);
+    }
 }
 
 /* Widget Header */
@@ -836,7 +841,12 @@ body {
 .contact-copy-card:hover {
     border-color: var(--accent-red);
     background-color: rgba(var(--accent-red-rgb), 0.04);
-    transform: translateX(4px);
+}
+
+@media (hover: hover) {
+    .contact-copy-card:hover {
+        transform: translateX(4px);
+    }
 }
 
 .contact-copy-card:active {
@@ -1124,5 +1134,44 @@ body {
 @media (hover: hover) and (pointer: fine) {
     .game-dpad {
         display: none;
+    }
+}
+
+/* ==========================================================================
+   10. Accessibility & Utility Classes
+   ========================================================================== */
+
+/* Screen reader only utility class for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Accessibility: Keyboard focus indicators */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent-red);
+    outline-offset: 4px;
+}
+
+/* Accessibility: Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-delay: -1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        background-attachment: initial !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
     }
 }

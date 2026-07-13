@@ -9,28 +9,27 @@ interface ContactItem {
   id: string;
   label: string;
   displayValue: string;
-  encoded: string; // Base64 — never written to DOM as plain URL
+  value: string;
 }
 
-// Data is stored ONLY as Base64. URLs are assembled in RAM on click, never rendered.
 const CONTACT_ITEMS: ContactItem[] = [
   {
     id: 'email',
     label: 'EMAIL',
     displayValue: 'everamendi17 · gmail',
-    encoded: 'ZXZlcmFtZW5kaTE3QGdtYWlsLmNvbQ==', // everamendi17@gmail.com
+    value: 'everamendi17@gmail.com',
   },
   {
     id: 'github',
     label: 'GITHUB',
     displayValue: 'github · Gaen17',
-    encoded: 'aHR0cHM6Ly9naXRodWIuY29tL0dhZW4xNw==', // https://github.com/Gaen17
+    value: 'https://github.com/Gaen17',
   },
   {
     id: 'linkedin',
     label: 'LINKEDIN',
     displayValue: 'linkedin · ernesto-veramendi',
-    encoded: 'aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2ZlZWQv', // https://www.linkedin.com/feed/
+    value: 'https://www.linkedin.com/in/ernesto-veramendi',
   },
 ];
 
@@ -46,27 +45,65 @@ export const ContactWidget: React.FC<ContactWidgetProps> = ({ onCopyToast }) => 
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
-    setTimeout(() => {
+
+    const accessKey = import.meta.env.VITE_WEB3FORMS_KEY || 'YOUR_ACCESS_KEY_HERE';
+
+    // Mock mode for local testing or when no key is set
+    if (accessKey === 'YOUR_ACCESS_KEY_HERE') {
+      setTimeout(() => {
+        setIsSending(false);
+        setIsSent(true);
+        setFormState({ name: '', email: '', message: '' });
+        setTimeout(() => setIsSent(false), 5000);
+      }, 1200);
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: accessKey,
+          name: formState.name,
+          email: formState.email,
+          message: formState.message,
+          subject: 'Nuevo mensaje de contacto - Portafolio',
+          from_name: 'Portafolio Web',
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsSent(true);
+        setFormState({ name: '', email: '', message: '' });
+        setTimeout(() => setIsSent(false), 5000);
+      } else {
+        alert('Error al enviar el mensaje: ' + (data.message || 'Intente de nuevo.'));
+      }
+    } catch (error) {
+      console.error('Error al enviar el formulario:', error);
+      alert('Error de conexión. Compruebe su conexión e intente de nuevo.');
+    } finally {
       setIsSending(false);
-      setIsSent(true);
-      setFormState({ name: '', email: '', message: '' });
-      setTimeout(() => setIsSent(false), 5000);
-    }, 1500);
+    }
   };
 
-  // Data only decoded in memory, on user gesture, never stored in DOM
-  const handleCopy = (item: ContactItem) => {
-    try {
-      const decoded = atob(item.encoded);
-      navigator.clipboard.writeText(decoded).then(() => {
-        onCopyToast(item.label);
+  const handleCopyEmail = (value: string) => {
+    navigator.clipboard.writeText(value)
+      .then(() => {
+        onCopyToast('EMAIL');
+      })
+      .catch((err) => {
+        console.error('Error al copiar el correo:', err);
+        alert('Correo: ' + value);
       });
-    } catch {
-      console.error('Copy failed');
-    }
   };
 
   return (
@@ -86,34 +123,43 @@ export const ContactWidget: React.FC<ContactWidgetProps> = ({ onCopyToast }) => 
           ) : (
             <form onSubmit={handleFormSubmit} className="nothing-contact-form">
               <div className="form-group">
+                <label htmlFor="contact-name" className="sr-only">Tu nombre</label>
                 <input
+                  id="contact-name"
                   type="text"
                   name="name"
                   value={formState.name}
                   onChange={handleInputChange}
                   placeholder="TU NOMBRE"
+                  maxLength={100}
                   required
                   disabled={isSending}
                 />
               </div>
               <div className="form-group">
+                <label htmlFor="contact-email" className="sr-only">Tu correo electrónico</label>
                 <input
+                  id="contact-email"
                   type="email"
                   name="email"
                   value={formState.email}
                   onChange={handleInputChange}
                   placeholder="TU CORREO"
+                  maxLength={100}
                   required
                   disabled={isSending}
                 />
               </div>
               <div className="form-group">
+                <label htmlFor="contact-message" className="sr-only">Tu mensaje</label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   value={formState.message}
                   onChange={handleInputChange}
                   placeholder="ESCRIBE TU MENSAJE..."
                   rows={4}
+                  maxLength={1000}
                   required
                   disabled={isSending}
                 />
@@ -129,32 +175,55 @@ export const ContactWidget: React.FC<ContactWidgetProps> = ({ onCopyToast }) => 
           )}
         </div>
 
-        {/* Secure Copyable Contact — entire card is the button, no copy button visible */}
+        {/* Secure Copyable / Linkable Contacts */}
         <div className="contact-socials-container">
           <h3 className="contact-section-title">CANALES SEGUROS</h3>
           <p className="socials-desc">
-            Pulsa cualquier canal para copiarlo al portapapeles.
+            Haz clic para interactuar o visitar los canales externos.
           </p>
           <ul className="contact-list">
             {CONTACT_ITEMS.map((item) => (
               <li key={item.id}>
-                <button
-                  className="contact-copy-card"
-                  onClick={() => handleCopy(item)}
-                  aria-label={`Copiar ${item.label}`}
-                  title={`Copiar ${item.label}`}
-                >
-                  <div className="contact-info">
-                    <span className="contact-label">{item.label}</span>
-                    <span className="contact-value">{item.displayValue}</span>
-                  </div>
-                  <span className="copy-icon" aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-                    </svg>
-                  </span>
-                </button>
+                {item.id === 'email' ? (
+                  <button
+                    className="contact-copy-card"
+                    onClick={() => handleCopyEmail(item.value)}
+                    aria-label={`Copiar correo: ${item.displayValue}`}
+                    title={`Copiar correo: ${item.displayValue}`}
+                  >
+                    <div className="contact-info">
+                      <span className="contact-label">{item.label}</span>
+                      <span className="contact-value">{item.displayValue}</span>
+                    </div>
+                    <span className="copy-icon" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                      </svg>
+                    </span>
+                  </button>
+                ) : (
+                  <a
+                    className="contact-copy-card"
+                    href={item.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Visitar ${item.label}`}
+                    title={`Visitar ${item.label}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <div className="contact-info">
+                      <span className="contact-label">{item.label}</span>
+                      <span className="contact-value">{item.displayValue}</span>
+                    </div>
+                    <span className="copy-icon" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="7" y1="17" x2="17" y2="7"></line>
+                        <polyline points="7 7 17 7 17 17"></polyline>
+                      </svg>
+                    </span>
+                  </a>
+                )}
               </li>
             ))}
           </ul>
