@@ -1,12 +1,13 @@
 import { PROFILE, PROJECTS, STACK } from '../content';
 import { ContactForm } from './ContactForm';
 import { ProjectThumb } from './ProjectThumb';
+import { SplitText } from './SplitText';
 
 export function DirectView({ onOpenDesktop }: { onOpenDesktop: () => void }) {
   return (
     <main id="main" className="direct">
       <section className="intro" aria-labelledby="intro-name">
-        <h1 id="intro-name" className="display intro-name">{PROFILE.name}</h1>
+        <h1 id="intro-name" className="display intro-name"><SplitText text={PROFILE.name} /></h1>
         <p className="intro-role">{PROFILE.role}</p>
         <p className="intro-bio">{PROFILE.bio}</p>
         <div className="intro-actions">

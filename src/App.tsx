@@ -45,11 +45,9 @@ export default function App() {
   const goWorkspace = useCallback(
     (id: WorkspaceId) => {
       if (id === ws) return;
-      document.documentElement.dataset.wsDir = id > ws ? 'next' : 'prev';
-      withTransition(() => {
-        setOpenProject(null);
-        setWs(id);
-      }, 'workspace');
+      // Windows run their own per-theme entrance on mount (see index.css "Motion").
+      setOpenProject(null);
+      setWs(id);
       const w = WORKSPACES.find((x) => x.id === id)!;
       cut({ title: w.label, subtitle: id === 2 ? `${PROJECTS.length} proyectos` : id === 3 ? 'Hablemos' : 'Quién soy', tone: id - 1 });
     },

@@ -4,6 +4,7 @@ import { isEditing, prefersReducedMotion, useMediaQuery } from '../lib';
 import { ContactForm } from './ContactForm';
 import { ProjectThumb } from './ProjectThumb';
 import { Snake } from './Snake';
+import { SplitText } from './SplitText';
 
 interface Props {
   ws: WorkspaceId;
@@ -36,7 +37,7 @@ const WINDOWS: Win[] = [
     title: 'whoami',
     body: (
       <div className="about-body">
-        <h1 className="display about-name">{PROFILE.name}</h1>
+        <h1 className="display about-name"><SplitText text={PROFILE.name} /></h1>
         <p className="intro-role">{PROFILE.role}</p>
         <p className="intro-bio">{PROFILE.bio}</p>
         <p className="about-motto">“{PROFILE.motto}”</p>
@@ -191,7 +192,7 @@ export function Desktop({ ws, onWorkspace, openProject, onProject, theme }: Prop
       aria-label={`Escritorio: ${WORKSPACES.find((w) => w.id === ws)!.label}`}
       data-theme-name={theme}
     >
-      {visible.map((w) => (
+      {visible.map((w, i) => (
         <section
           key={w.id}
           className={`win win-${w.id.startsWith('proj-') ? 'proj' : w.id}`}
@@ -200,7 +201,7 @@ export function Desktop({ ws, onWorkspace, openProject, onProject, theme }: Prop
           data-project={w.project}
           tabIndex={0}
           aria-label={w.title}
-          style={{ '--vtn': w.project && w.project === openProject ? 'none' : `win-${w.id}` } as CSSProperties}
+          style={{ '--vtn': w.project && w.project === openProject ? 'none' : `win-${w.id}`, '--i': i } as CSSProperties}
           onMouseEnter={(e) => {
             if (wide && !isEditing(document.activeElement)) e.currentTarget.focus({ preventScroll: true });
           }}

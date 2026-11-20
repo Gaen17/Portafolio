@@ -941,11 +941,96 @@ kbd {
   text-shadow: 0 0 18px rgba(255, 43, 43, 0.25);
 }
 
-/* ---------- View Transitions ---------- */
-[data-vt='workspace'] #main {
-  view-transition-name: workspace;
+/* ---------- Motion: one signature per theme ---------- */
+/* Three moments per theme: the name's entrance, windows entering a workspace, and the theme switch reveal. */
+
+.split-word {
+  white-space: nowrap;
 }
 
+.split-ch {
+  display: inline-block;
+}
+
+/* backwards (not both): the end state must not override theme styles like Night City's clipped corners. */
+.desktop .win:not(.win-expanded),
+.strip .win:not(.win-expanded) {
+  animation: var(--win-anim) backwards;
+  animation-delay: calc(var(--i, 0) * var(--win-stagger));
+}
+
+/* Nothing: letters light up in scrambled order like LEDs; windows power on. */
+[data-theme='nothing'] {
+  --win-anim: 0.45s var(--ease-out) power-on;
+  --win-stagger: 55ms;
+}
+
+[data-theme='nothing'] .split-ch {
+  animation: 0.5s steps(3, end) both led-on;
+  animation-delay: calc(var(--r) * 45ms);
+}
+
+/* Night City: letters jitter in with an RGB split; windows glitch into place. */
+[data-theme='nightcity'] {
+  --win-anim: 0.42s steps(6) glitch-in;
+  --win-stagger: 70ms;
+}
+
+[data-theme='nightcity'] .split-ch {
+  animation: 0.6s steps(5) both rgb-in;
+  animation-delay: calc(var(--i) * 28ms);
+}
+
+[data-theme='nightcity'] .win:focus-within::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.16) 50%, transparent);
+  animation: 0.6s linear 1 scan;
+}
+
+/* Vice: letters float up on a spring; windows rise like a warm breeze; the sky drifts. */
+[data-theme='vice'] {
+  --win-anim: 0.8s var(--ease-spring) rise;
+  --win-stagger: 70ms;
+}
+
+[data-theme='vice'] .split-ch {
+  animation: 0.9s var(--ease-spring) both float-up;
+  animation-delay: calc(var(--i) * 32ms);
+}
+
+[data-theme='vice'] body {
+  background-size: 140% 140%, auto;
+  animation: 24s ease-in-out infinite alternate sky-drift;
+}
+
+/* Monogatari: letters typed one by one; windows cut in with a hard wipe. */
+[data-theme='monogatari'] {
+  --win-anim: 0.32s cubic-bezier(0.7, 0, 0.2, 1) wipe-in;
+  --win-stagger: 45ms;
+}
+
+[data-theme='monogatari'] .split-ch {
+  animation: 0.01s steps(1) both type-on;
+  animation-delay: calc(0.15s + var(--i) * 70ms);
+}
+
+[data-theme='monogatari'] .intro-name,
+[data-theme='monogatari'] .about-name {
+  background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 92% / 0 0.12em;
+  animation: 0.5s cubic-bezier(0.7, 0, 0.2, 1) 1.4s both underline;
+}
+
+/* Theme switch: the new theme enters in its own way. */
+[data-vt='theme']::view-transition-old(root) { animation: none; }
+[data-vt='theme']::view-transition-new(root) { animation: 0.6s var(--ease-out) both reveal; }
+[data-theme='nightcity'][data-vt='theme']::view-transition-new(root) { animation: 0.45s steps(5) both slices; }
+[data-theme='vice'][data-vt='theme']::view-transition-new(root) { animation: 0.9s var(--ease-out) both reveal; }
+[data-theme='monogatari'][data-vt='theme']::view-transition-new(root) { animation: 0.4s cubic-bezier(0.7, 0, 0.2, 1) both wipe-root; }
+
+/* Opening a project morphs its window (shared view-transition-name). */
 [data-vt='window'] [data-win],
 [data-vt='window'] .win-expanded {
   view-transition-name: var(--vtn, none);
@@ -956,22 +1041,73 @@ kbd {
   animation-timing-function: var(--ease-spring);
 }
 
-[data-ws-dir='next'][data-vt='workspace']::view-transition-old(workspace) { animation: 0.35s var(--ease-out) both slide-out-left; }
-[data-ws-dir='next'][data-vt='workspace']::view-transition-new(workspace) { animation: 0.5s var(--ease-spring) both slide-in-right; }
-[data-ws-dir='prev'][data-vt='workspace']::view-transition-old(workspace) { animation: 0.35s var(--ease-out) both slide-out-right; }
-[data-ws-dir='prev'][data-vt='workspace']::view-transition-new(workspace) { animation: 0.5s var(--ease-spring) both slide-in-left; }
+[data-theme='monogatari']::view-transition-group(*) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+}
 
-[data-theme='nightcity'][data-vt='workspace']::view-transition-new(workspace) { animation: 0.4s steps(6) both glitch-in; }
-[data-theme='monogatari'][data-vt='workspace']::view-transition-old(workspace),
-[data-theme='monogatari'][data-vt='workspace']::view-transition-new(workspace) { animation: none; }
+@keyframes power-on {
+  from { opacity: 0; transform: scale(0.96); filter: brightness(2); }
+}
 
-[data-vt='theme']::view-transition-old(root) { animation: none; }
-[data-vt='theme']::view-transition-new(root) { animation: 0.6s var(--ease-out) both reveal; }
+@keyframes led-on {
+  0% { opacity: 0; }
+  50% { opacity: 1; color: var(--accent); }
+  75% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
 
-@keyframes slide-out-left { to { transform: translateX(-12%); opacity: 0; } }
-@keyframes slide-out-right { to { transform: translateX(12%); opacity: 0; } }
-@keyframes slide-in-right { from { transform: translateX(18%); opacity: 0; } }
-@keyframes slide-in-left { from { transform: translateX(-18%); opacity: 0; } }
+@keyframes rgb-in {
+  0% { opacity: 0; transform: translateX(-6px); text-shadow: -4px 0 #00f0ff, 4px 0 #ff003c; }
+  60% { opacity: 1; transform: translateX(3px); text-shadow: 2px 0 #00f0ff, -2px 0 #ff003c; }
+  100% { transform: none; text-shadow: none; }
+}
+
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(28px) scale(0.98); }
+}
+
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(0.5em) rotate(4deg); }
+}
+
+@keyframes sky-drift {
+  from { background-position: 100% 0, 0 0; }
+  to { background-position: 0 20%, 0 0; }
+}
+
+@keyframes wipe-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes type-on {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes underline {
+  to { background-size: 100% 0.12em; }
+}
+
+@keyframes slices {
+  0% { clip-path: inset(0 0 100% 0); }
+  20% { clip-path: inset(0 0 70% 0); }
+  40% { clip-path: inset(30% 0 40% 0); }
+  60% { clip-path: inset(0 0 30% 0); }
+  80% { clip-path: inset(10% 0 0 0); }
+  100% { clip-path: inset(0); }
+}
+
+@keyframes wipe-root {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
 
 @keyframes reveal {
   from { clip-path: circle(0 at var(--vt-x, 90%) var(--vt-y, 0)); }
