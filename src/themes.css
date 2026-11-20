@@ -1,0 +1,116 @@
+/* Theme tokens. Each theme is inspired by a mood (palette, rhythm, motion), never by brand assets. */
+
+:root {
+  --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077, 1.121,
+    1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%,
+    0.974 53.8%, 0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1.004 83.8%, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --gap: 12px;
+  --bar-h: 52px;
+}
+
+/* Nothing: black glass, dot matrix, one red signal. */
+:root,
+[data-theme='nothing'] {
+  color-scheme: dark;
+  --bg: #000;
+  --surface: #0f0f0f;
+  --surface-2: #1a1a1a;
+  --text: #f2f2f2;
+  --muted: #a1a1a8;
+  --accent: #ff2b2b;
+  --on-accent: #fff;
+  --link: #ff6b6b;
+  --border: rgba(255, 255, 255, 0.14);
+  --border-active: #ff2b2b;
+  --radius: 22px;
+  --radius-sm: 12px;
+  --font-display: 'Doto', ui-monospace, monospace;
+  --font-body: 'Instrument Sans', system-ui, sans-serif;
+  --font-ui: 'Instrument Sans', system-ui, sans-serif;
+  --display-weight: 900;
+  --display-transform: none;
+  --display-tracking: -0.02em;
+  --bg-art: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.4px) 0 0 / 22px 22px;
+  --thumb-art: radial-gradient(rgba(255, 255, 255, 0.28) 1.2px, transparent 1.6px) 0 0 / 10px 10px;
+}
+
+/* Night City: neon on a dark street, hard corners, cyan grid. */
+[data-theme='nightcity'] {
+  color-scheme: dark;
+  --bg: #06060c;
+  --surface: #0e0e19;
+  --surface-2: #171728;
+  --text: #ececf6;
+  --muted: #9a9abd;
+  --accent: #fcee0a;
+  --on-accent: #06060c;
+  --link: #00f0ff;
+  --border: rgba(0, 240, 255, 0.28);
+  --border-active: #fcee0a;
+  --radius: 0px;
+  --radius-sm: 0px;
+  --font-display: 'Chakra Petch', system-ui, sans-serif;
+  --font-body: 'Chakra Petch', system-ui, sans-serif;
+  --font-ui: 'JetBrains Mono', ui-monospace, monospace;
+  --display-weight: 700;
+  --display-transform: uppercase;
+  --display-tracking: 0.02em;
+  --bg-art:
+    linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px) 0 0 / 40px 40px,
+    radial-gradient(80% 50% at 50% 110%, rgba(255, 0, 60, 0.18), transparent 70%);
+  --thumb-art:
+    repeating-linear-gradient(0deg, rgba(0, 240, 255, 0.14) 0 1px, transparent 1px 4px),
+    linear-gradient(135deg, rgba(252, 238, 10, 0.18), transparent 60%);
+}
+
+/* Vice: clean beach afternoon, sunset gradient, soft big radii. */
+[data-theme='vice'] {
+  color-scheme: light;
+  --bg: #f6ede3;
+  --surface: #fffaf5;
+  --surface-2: #fbeee1;
+  --text: #1b2a35;
+  --muted: #55636d;
+  --accent: #ff6fa3;
+  --on-accent: #1b2a35;
+  --link: #0b6b67;
+  --border: rgba(27, 42, 53, 0.12);
+  --border-active: #ff6fa3;
+  --radius: 28px;
+  --radius-sm: 16px;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Inter Tight', system-ui, sans-serif;
+  --font-ui: 'Inter Tight', system-ui, sans-serif;
+  --display-weight: 800;
+  --display-transform: none;
+  --display-tracking: -0.035em;
+  --bg-art: radial-gradient(110% 70% at 85% -10%, #ffc39a 0%, #ffd3e3 38%, transparent 72%);
+  --thumb-art: linear-gradient(160deg, #ff9f45 0%, #ff6fa3 45%, #1fb5b0 100%);
+}
+
+/* Monogatari: white page, black ink, one red cut. */
+[data-theme='monogatari'] {
+  color-scheme: light;
+  --bg: #fff;
+  --surface: #fff;
+  --surface-2: #f3f3f3;
+  --text: #000;
+  --muted: #4a4a4a;
+  --accent: #e60012;
+  --on-accent: #fff;
+  --link: #c4000f;
+  --border: #000;
+  --border-active: #e60012;
+  --radius: 0px;
+  --radius-sm: 0px;
+  --font-display: 'Shippori Mincho', 'Times New Roman', serif;
+  --font-body: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --font-ui: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --display-weight: 800;
+  --display-transform: none;
+  --display-tracking: 0.04em;
+  --bg-art: none;
+  --thumb-art: linear-gradient(90deg, #000 0 50%, #e60012 50% 100%);
+}

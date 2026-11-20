@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Widget } from './Widget';
 
 // Grid dimensions — portrait orientation like a tamagotchi screen
 const COLS = 11;
@@ -23,15 +22,16 @@ function randFood(snake: Pt[]): Pt {
   return pt;
 }
 
-function getColors() {
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+// Reads the active theme's tokens so the game repaints in every theme.
+function getColors(el: HTMLElement) {
+  const css = getComputedStyle(el);
+  const v = (name: string) => css.getPropertyValue(name).trim();
   return {
-    bg:       isDark ? '#0d0d0d' : '#f8f8f8',
-    gridDot:  isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.09)',
-    body:     isDark ? '#d4d4d8' : '#27272a',
-    head:     '#ff3b3b',
-    food:     '#ff3b3b',
-    dead:     isDark ? 'rgba(13,13,13,0.82)' : 'rgba(248,248,248,0.82)',
+    bg: v('--surface-2'),
+    gridDot: v('--border'),
+    body: v('--text'),
+    head: v('--accent'),
+    food: v('--accent'),
   };
 }
 
@@ -55,7 +55,7 @@ function drawRoundRect(
 
 const STEP_MS = 145; // ms between snake steps
 
-export const GameWidget: React.FC = () => {
+export const Snake: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Game state in refs (no re-render on each frame)
@@ -63,10 +63,11 @@ export const GameWidget: React.FC = () => {
   const snake      = useRef<Pt[]>([{ x: 5, y: 7 }, { x: 4, y: 7 }, { x: 3, y: 7 }]);
   const dir        = useRef<Dir>('R');
   const nextDir    = useRef<Dir>('R');
-  const food       = useRef<Pt>(randFood(snake.current));
+  const food       = useRef<Pt>({ x: 8, y: 3 }); // fixed first food; randomized on start
   const score      = useRef(0);
   const frameId    = useRef<number>(0);
   const lastStep   = useRef<number>(0);
+  const loopRef    = useRef<(ts: number) => void>(() => {});
 
   // React state only for UI rendering
   const [uiState, setUiState]       = useState<GameState>('idle');
@@ -80,7 +81,7 @@ export const GameWidget: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
-    const c = getColors();
+    const c = getColors(canvas);
     const W = COLS * CELL;
     const H = ROWS * CELL;
 
@@ -178,8 +179,12 @@ export const GameWidget: React.FC = () => {
     }
 
     draw(ts);
-    frameId.current = requestAnimationFrame(loop);
+    frameId.current = requestAnimationFrame(loopRef.current);
   }, [draw, highScore]);
+
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
 
   // ── Start / reset ────────────────────────────────────────────────────────────
   const startGame = useCallback(() => {
@@ -193,8 +198,8 @@ export const GameWidget: React.FC = () => {
     gameState.current = 'playing';
     setUiState('playing');
     lastStep.current = performance.now();
-    frameId.current  = requestAnimationFrame(loop);
-  }, [loop]);
+    frameId.current  = requestAnimationFrame(loopRef.current);
+  }, []);
 
   // Initial draw + cleanup
   useEffect(() => {
@@ -218,8 +223,9 @@ export const GameWidget: React.FC = () => {
       // Prevent page scroll while playing
       e.preventDefault();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    // Capture phase + preventDefault so desktop focus keys stand down while playing.
+    window.addEventListener('keydown', onKey, { capture: true });
+    return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, []);
 
   // ── Mobile D-pad handler ─────────────────────────────────────────────────────
@@ -228,67 +234,30 @@ export const GameWidget: React.FC = () => {
   };
 
   return (
-    <Widget tag="ARCADE.EXE" className="widget-game">
-      {/* Score bar */}
-      <div className="game-scorebar">
-        <span className="game-score-label">SCORE</span>
-        <span className="game-score-value">{String(uiScore).padStart(4, '0')}</span>
-        <span className="game-score-sep">·</span>
-        <span className="game-score-label">HI</span>
-        <span className="game-score-value">{String(highScore).padStart(4, '0')}</span>
-      </div>
-
-      {/* Canvas */}
+    <div className="game">
+      <p className="game-score" aria-live="polite">
+        Puntos <strong>{uiScore}</strong> <span aria-hidden="true">/</span> Récord <strong>{highScore}</strong>
+      </p>
       <div className="game-canvas-wrapper">
-        <canvas
-          ref={canvasRef}
-          width={COLS * CELL}
-          height={ROWS * CELL}
-          className="game-canvas"
-        />
-
-        {/* Overlay — idle or dead */}
+        <canvas ref={canvasRef} width={COLS * CELL} height={ROWS * CELL} className="game-canvas" aria-label="Tablero de Snake" role="img" />
         {uiState !== 'playing' && (
           <div className="game-overlay">
-            {uiState === 'dead' ? (
-              <>
-                <p className="game-overlay-tag">// PROCESS TERMINATED</p>
-                <p className="game-overlay-title">GAME OVER</p>
-                <p className="game-overlay-pts">{uiScore} PTS</p>
-                <button className="game-start-btn" onClick={startGame}>
-                  RETRY.SH
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="game-overlay-tag">// ARCADE MODULE READY</p>
-                <p className="game-overlay-title">SNAKE.EXE</p>
-                <p className="game-overlay-hint">↑↓←→ · WASD</p>
-                <button className="game-start-btn" onClick={startGame}>
-                  INICIAR.SH
-                </button>
-              </>
-            )}
+            <p className="game-overlay-title">{uiState === 'dead' ? `Fin: ${uiScore} puntos` : 'Snake'}</p>
+            <p className="game-overlay-hint">Flechas o WASD</p>
+            <button type="button" className="btn btn-primary" onClick={startGame}>
+              {uiState === 'dead' ? 'Jugar otra vez' : 'Jugar'}
+            </button>
           </div>
         )}
       </div>
-
-      {/* Mobile D-pad */}
-      <div className="game-dpad" aria-label="Controles direccionales">
-        <div className="dpad-row">
-          <button className="dpad-btn" onClick={() => press('U')} aria-label="Arriba">▲</button>
-        </div>
-        <div className="dpad-row dpad-row--mid">
-          <button className="dpad-btn" onClick={() => press('L')} aria-label="Izquierda">◀</button>
-          <span className="dpad-center" />
-          <button className="dpad-btn" onClick={() => press('R')} aria-label="Derecha">▶</button>
-        </div>
-        <div className="dpad-row">
-          <button className="dpad-btn" onClick={() => press('D')} aria-label="Abajo">▼</button>
-        </div>
+      <div className="game-dpad" role="group" aria-label="Controles direccionales">
+        <button type="button" className="dpad-btn dpad-u" onClick={() => press('U')} aria-label="Arriba">▲</button>
+        <button type="button" className="dpad-btn dpad-l" onClick={() => press('L')} aria-label="Izquierda">◀</button>
+        <button type="button" className="dpad-btn dpad-r" onClick={() => press('R')} aria-label="Derecha">▶</button>
+        <button type="button" className="dpad-btn dpad-d" onClick={() => press('D')} aria-label="Abajo">▼</button>
       </div>
-    </Widget>
+    </div>
   );
 };
 
-export default GameWidget;
+export default Snake;
