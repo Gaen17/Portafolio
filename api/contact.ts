@@ -71,14 +71,15 @@ export async function POST(request: Request): Promise<Response> {
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       from: 'Portafolio <onboarding@resend.dev>',
-      to: [CONTACT_TO_EMAIL],
+      to: [CONTACT_TO_EMAIL.trim()],
       reply_to: email,
       subject: `Portafolio: mensaje de ${name}`,
       text: `Nombre: ${name}\nCorreo: ${email}\n\n${message}`,
     }),
   }).catch(() => null);
   if (!sent?.ok) {
-    console.error('contact: resend failed', sent?.status);
+    // Resend's error body names the rejected field; it holds no secrets.
+    console.error('contact: resend failed', sent?.status, (await sent?.text().catch(() => ''))?.slice(0, 300));
     return json(502, { ok: false, error: 'No se pudo enviar el mensaje. Inténtalo en unos minutos.' });
   }
   return json(200, { ok: true });
