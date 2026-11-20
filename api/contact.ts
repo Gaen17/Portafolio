@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Vercel Function: receives the contact form, verifies Turnstile, sends the email through Resend.
 // Secrets live only in Vercel env vars: RESEND_API_KEY, CONTACT_TO_EMAIL, TURNSTILE_SECRET_KEY.
 
