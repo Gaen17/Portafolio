@@ -1,187 +1,132 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import StatusHeader from './components/StatusHeader';
-import HeroWidget from './components/HeroWidget';
-import TechWidget from './components/TechWidget';
-import ProjectWidget from './components/ProjectWidget';
-import ContactWidget from './components/ContactWidget';
-import GameWidget from './components/GameWidget';
+import { useCallback, useEffect, useState } from 'react';
+import { PROJECTS, THEME_IDS, WORKSPACES, type ThemeId, type WorkspaceId } from './content';
+import { usePersisted, withTransition, prefersReducedMotion } from './lib';
+import { TopBar } from './components/TopBar';
+import { DirectView } from './components/DirectView';
+import { Desktop } from './components/Desktop';
+import { Launcher } from './components/Launcher';
+import { SceneCard, type Scene } from './components/SceneCard';
 
-// All projects — 9 total fills 3×3 bento grid perfectly
-const PROJECTS = [
-  {
-    id: 'projects',
-    tag: 'RESTAURANTE_POS.SYS',
-    matrixText: '[SERVER_CLIENT // ONLINE]',
-    title: 'Restaurante POS',
-    description: 'Sistema completo de punto de venta. Aplicación móvil nativa en Android (Java/Kotlin) conectada en tiempo real a una API REST en PHP con base de datos MySQL.',
-    url: 'https://github.com/Gaen17/Restaurante-POS',
-  },
-  {
-    id: undefined,
-    tag: 'MATH_QUEST.EDU',
-    matrixText: '[EDUCATION // RUNNING]',
-    title: 'Aventura Matemática',
-    description: 'Aplicación web interactiva de práctica matemática para niños de 3er grado de primaria. Estilos interactivos con Tailwind CSS, JS nativo y gráficos en Chart.js.',
-    url: 'https://github.com/Gaen17/aventura-matematica',
-  },
-  {
-    id: undefined,
-    tag: 'TASK_MANAGER.TS',
-    matrixText: '[TASK_FLOW // LOCAL]',
-    title: 'Next To-Do List',
-    description: 'Gestor de tareas avanzado estructurado en TypeScript bajo paradigma de Programación Orientada a Objetos (POO). Persistencia local con validación de fechas.',
-    url: 'https://github.com/Gaen17/next-to-do',
-  },
-  {
-    id: undefined,
-    tag: 'BOT_TELEGRAM.PY',
-    matrixText: '[SO_AUTOMATION // STANDBY]',
-    title: 'Bot Telegram OS',
-    description: 'Script en Python para la automatización de tareas y control remoto del sistema operativo mediante comandos integrados con la API de Telegram Bots.',
-    url: 'https://github.com/Gaen17',
-  },
-  {
-    id: undefined,
-    tag: 'IOT_DASHBOARD.UI',
-    matrixText: '[METRICS_FLOW // STATIC]',
-    title: 'Explorador IoT',
-    description: 'Dashboard interactivo de visualización de métricas de eficiencia energética y adopción global de tecnologías IoT. Desarrollado con Tailwind CSS y Chart.js.',
-    url: 'https://github.com/Gaen17/Explorador-de-Vanguardia-IoT-Soluciones-Globales',
-  },
-  {
-    id: undefined,
-    tag: 'NOTHING_PORTFOLIO.UI',
-    matrixText: '[BENTO_GRID // ACTIVE]',
-    title: 'NOS Bento Portfolio',
-    description: 'Este portafolio interactivo basado en widgets estilo Nothing OS. Desarrollado en React, TypeScript y CSS modular con soporte para modo oscuro.',
-    url: 'https://github.com/Gaen17',
-  },
-];
+const MODES = ['direct', 'desktop'] as const;
+export type Mode = (typeof MODES)[number];
 
-export const App: React.FC = () => {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [activeSection, setActiveSection] = useState('about');
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  // Global toast — rendered at App root so it's never clipped by widget overflow:hidden
-  const [toast, setToast] = useState<string | null>(null);
+export default function App() {
+  const [theme, setTheme] = usePersisted<ThemeId>('ev-theme', 'nothing', THEME_IDS);
+  const [mode, setMode] = usePersisted<Mode>('ev-mode', 'direct', MODES);
+  const [ws, setWs] = useState<WorkspaceId>(1);
+  const [openProject, setOpenProject] = useState<string | null>(null);
+  const [launcherOpen, setLauncherOpen] = useState(false);
+  const [scene, setScene] = useState<Scene | null>(null);
 
-  // Initialize theme
+  // Initial theme is set in main.tsx before the first render; this keeps it in sync afterwards.
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
-    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
-    setTheme(initialTheme);
-    document.documentElement.setAttribute('data-theme', initialTheme);
-  }, []);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
-  const handleToggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
+  // Monogatari cuts to a full-screen title card between scenes.
+  const cut = useCallback(
+    (next: Scene) => {
+      if (theme === 'monogatari' && !prefersReducedMotion()) setScene(next);
+    },
+    [theme],
+  );
 
-  // Accurate ScrollSpy using IntersectionObserver
+  const changeTheme = useCallback(
+    (id: ThemeId, origin?: { x: number; y: number }) => {
+      if (origin) {
+        document.documentElement.style.setProperty('--vt-x', `${origin.x}px`);
+        document.documentElement.style.setProperty('--vt-y', `${origin.y}px`);
+      }
+      withTransition(() => setTheme(id), 'theme');
+    },
+    [setTheme],
+  );
+
+  const goWorkspace = useCallback(
+    (id: WorkspaceId) => {
+      if (id === ws) return;
+      document.documentElement.dataset.wsDir = id > ws ? 'next' : 'prev';
+      withTransition(() => {
+        setOpenProject(null);
+        setWs(id);
+      }, 'workspace');
+      const w = WORKSPACES.find((x) => x.id === id)!;
+      cut({ title: w.label, subtitle: id === 2 ? `${PROJECTS.length} proyectos` : id === 3 ? 'Hablemos' : 'Quién soy', tone: id - 1 });
+    },
+    [ws, cut],
+  );
+
+  const toggleProject = useCallback(
+    (id: string | null) => {
+      withTransition(() => setOpenProject(id), 'window');
+      const p = PROJECTS.find((x) => x.id === id);
+      if (p) cut({ title: p.title, subtitle: p.kind, tone: PROJECTS.indexOf(p) });
+    },
+    [cut],
+  );
+
+  const changeMode = useCallback(
+    (m: Mode) => {
+      withTransition(() => {
+        setMode(m);
+        setOpenProject(null);
+      }, 'mode');
+      window.scrollTo({ top: 0 });
+    },
+    [setMode],
+  );
+
+  // Ctrl/Cmd+K opens the launcher in both modes.
   useEffect(() => {
-    const sectionIds = ['about', 'tech', 'projects', 'contact'];
-    const observers: IntersectionObserver[] = [];
-
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry.isIntersecting) return;
-          // On page load (scrollY ≈ 0) always keep 'about' active —
-          // prevents the observer's initial burst from selecting 'tech'
-          // because it happens to appear in the shrunken intersection root.
-          if (window.scrollY < 80) {
-            setActiveSection('about');
-            return;
-          }
-          setActiveSection(id);
-        },
-        { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
-      );
-      observer.observe(el);
-      observers.push(observer);
-    });
-    return () => observers.forEach((o) => o.disconnect());
-  }, []);
-
-  // Scroll-to-top button visibility
-  useEffect(() => {
-    const handleScroll = () => setShowScrollTop(window.scrollY > 400);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  // Global copy handler — passed to ContactWidget so toast renders at App root
-  const handleCopyToast = useCallback((label: string) => {
-    setToast(label);
-    setTimeout(() => setToast(null), 2500);
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setLauncherOpen((o) => !o);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   return (
-    <div className="dashboard-container">
-      <StatusHeader
-        activeSection={activeSection}
+    <>
+      <a className="skip-link" href="#main">Saltar al contenido</a>
+      <TopBar
+        mode={mode}
+        onMode={changeMode}
         theme={theme}
-        onToggleTheme={handleToggleTheme}
+        onTheme={changeTheme}
+        ws={ws}
+        onWorkspace={goWorkspace}
+        onLauncher={() => setLauncherOpen(true)}
       />
-
-      <main className="bento-grid">
-        <HeroWidget />
-        <TechWidget />
-
-        {PROJECTS.map((p) => (
-          <ProjectWidget
-            key={p.tag}
-            id={p.id}
-            tag={p.tag}
-            matrixText={p.matrixText}
-            title={p.title}
-            description={p.description}
-            url={p.url}
-          />
-        ))}
-
-        <ContactWidget onCopyToast={handleCopyToast} />
-
-        {/* Snake mini-game — fills the 3rd column next to ContactWidget */}
-        <GameWidget />
-      </main>
-
-      <footer className="system-footer">
-        <p>© 2026 Ernesto Veramendi. Todos los derechos reservados.</p>
-        <p className="footer-system-status">SYS_STATUS: OPTIMAL</p>
-      </footer>
-
-      {/* Floating Scroll-to-top */}
-      <button
-        className={`scroll-top-btn ${showScrollTop ? 'scroll-top-btn--visible' : ''}`}
-        onClick={scrollToTop}
-        aria-label="Volver al inicio"
-        title="Volver al inicio"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <polyline points="18 15 12 9 6 15" />
-        </svg>
-      </button>
-
-      {/* Global Toast — at App root, never clipped by widget overflow:hidden */}
-      <div
-        className={`copy-toast ${toast ? 'copy-toast--visible' : ''}`}
-        role="status"
-        aria-live="polite"
-      >
-        <span className="copy-toast-dot" />
-        <span className="copy-toast-text">{toast ? `${toast} COPIADO` : ''}</span>
-      </div>
-    </div>
+      {mode === 'direct' ? (
+        <DirectView onOpenDesktop={() => changeMode('desktop')} />
+      ) : (
+        <Desktop ws={ws} onWorkspace={goWorkspace} openProject={openProject} onProject={toggleProject} theme={theme} />
+      )}
+      <Launcher
+        open={launcherOpen}
+        onClose={() => setLauncherOpen(false)}
+        mode={mode}
+        actions={{
+          workspace: (id) => {
+            if (mode !== 'desktop') changeMode('desktop');
+            goWorkspace(id);
+          },
+          project: (id) => {
+            if (mode === 'desktop') {
+              if (ws !== 2) goWorkspace(2);
+              toggleProject(id);
+            } else {
+              document.getElementById(`p-${id}`)?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+            }
+          },
+          theme: (id) => changeTheme(id),
+          mode: changeMode,
+        }}
+      />
+      {scene && <SceneCard scene={scene} onDone={() => setScene(null)} />}
+    </>
   );
-};
-
-export default App;
+}

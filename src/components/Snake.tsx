@@ -63,10 +63,11 @@ export const Snake: React.FC = () => {
   const snake      = useRef<Pt[]>([{ x: 5, y: 7 }, { x: 4, y: 7 }, { x: 3, y: 7 }]);
   const dir        = useRef<Dir>('R');
   const nextDir    = useRef<Dir>('R');
-  const food       = useRef<Pt>(randFood(snake.current));
+  const food       = useRef<Pt>({ x: 8, y: 3 }); // fixed first food; randomized on start
   const score      = useRef(0);
   const frameId    = useRef<number>(0);
   const lastStep   = useRef<number>(0);
+  const loopRef    = useRef<(ts: number) => void>(() => {});
 
   // React state only for UI rendering
   const [uiState, setUiState]       = useState<GameState>('idle');
@@ -178,8 +179,12 @@ export const Snake: React.FC = () => {
     }
 
     draw(ts);
-    frameId.current = requestAnimationFrame(loop);
+    frameId.current = requestAnimationFrame(loopRef.current);
   }, [draw, highScore]);
+
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
 
   // ── Start / reset ────────────────────────────────────────────────────────────
   const startGame = useCallback(() => {
@@ -193,8 +198,8 @@ export const Snake: React.FC = () => {
     gameState.current = 'playing';
     setUiState('playing');
     lastStep.current = performance.now();
-    frameId.current  = requestAnimationFrame(loop);
-  }, [loop]);
+    frameId.current  = requestAnimationFrame(loopRef.current);
+  }, []);
 
   // Initial draw + cleanup
   useEffect(() => {

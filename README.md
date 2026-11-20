@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# Portafolio — Ernesto Veramendi
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Personal portfolio with two ways to browse it:
 
-Currently, two official plugins are available:
+- **Vista directa** (default): one readable page with projects, stack and contact.
+- **Escritorio**: a tiling-window desktop (Hyprland-like on wide screens, a Niri-like swipeable strip on phones).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Four themes: Nothing, Night City, Vice and Monogatari. Shareable links: `?theme=vice&mode=desktop`.
 
-## React Compiler
+## Keyboard (desktop mode)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Keys | Action |
+|---|---|
+| `Alt+1` `Alt+2` `Alt+3` | Switch workspace |
+| Arrows or `h j k l` | Move focus between windows |
+| `Enter` / `Esc` | Open / close the focused project |
+| `Ctrl+K` | Launcher (works in both modes) |
 
-## Expanding the ESLint configuration
+Everything is also clickable. `prefers-reduced-motion` turns animations off.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+React 19, TypeScript 6, Vite 8, native View Transitions, self-hosted OFL fonts (Fontsource), one Vercel Function for the contact form.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Scripts
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev      # local dev server (the contact form needs `vercel dev` to reach /api)
+npm run build
+npm run lint
+npm test         # contact function tests (node:test)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Contact form setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The form posts to `api/contact.ts`, which checks a honeypot, validates input, verifies Cloudflare Turnstile server-side and sends the message with Resend. The destination address never reaches the browser.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Create a free [Resend](https://resend.com) account and an API key. Without a verified domain, Resend only delivers to your own account email, which is all this form needs.
+2. Create a free [Cloudflare Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile) widget for your Vercel domain and `localhost`.
+3. In Vercel → Project → Settings → Environment Variables, add:
+
+| Variable | Value | Exposed to browser |
+|---|---|---|
+| `RESEND_API_KEY` | Resend API key | no |
+| `CONTACT_TO_EMAIL` | the inbox that receives messages | no |
+| `TURNSTILE_SECRET_KEY` | Turnstile secret key | no |
+| `VITE_TURNSTILE_SITE_KEY` | Turnstile site key (public by design) | yes |
+
+Redeploy after adding them. Security headers (CSP, HSTS, frame denial) live in `vercel.json`.
+
+## Project screenshots
+
+Put images in `public/projects/` and set `image: '/projects/<file>.webp'` on the project in `src/content.ts`. Until then a themed placeholder is shown.
